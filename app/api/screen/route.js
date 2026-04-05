@@ -1,23 +1,25 @@
 import { NextResponse } from 'next/server';
 import { callClaude, extractText } from '../../../lib/claude';
 
-const SEARCH_PROMPT = `You are a job search engine. Given a search query, location, and remote preference, generate 8-12 realistic current job listings that would appear on major job boards today.
+const SEARCH_PROMPT = `You are a job search engine. Given a search query, location, and remote preference, find 8-12 REAL job listings currently open on major job boards.
 
-Each job MUST be a real type of role that companies actually hire for. Use real company names from well-known tech companies, startups, and scale-ups that are actively hiring. Make the descriptions realistic — include actual requirements, responsibilities, and benefits.
+CRITICAL: Every job MUST include a real, working URL to the actual job posting. Use URLs from real job boards: jobs.ashbyhq.com, jobs.lever.co, boards.greenhouse.io, wellfound.com, linkedin.com/jobs, weworkremotely.com, himalayas.app, remotive.com, etc.
+
+Only include jobs you are confident actually exist. Do NOT invent fictional listings or use placeholder URLs. If you cannot find enough real listings, return fewer results rather than fake ones.
 
 Return ONLY a JSON array:
 [
   {
-    "title": "exact job title",
+    "title": "exact job title from the listing",
     "company": "real company name",
-    "location": "city, country or Remote",
-    "salary": "salary range if typical for this role, or empty string",
-    "description": "2-3 paragraph realistic job description with requirements, responsibilities, and what the company offers",
-    "url": ""
+    "location": "city, country or Remote — as listed",
+    "salary": "salary range if listed, or empty string",
+    "description": "2-3 paragraph description from the actual listing: requirements, responsibilities, and what the company offers",
+    "url": "https://real-url-to-the-actual-job-posting"
   }
 ]
 
-Be specific and varied. Mix company sizes. Include both well-known and lesser-known companies. Make descriptions detailed enough to score against a candidate profile.`;
+Be specific and varied. Mix company sizes. Include both well-known and lesser-known companies. Descriptions must be detailed enough to score against a candidate profile.`;
 
 const SCORE_PROMPT = `Score this job against the candidate profile on 6 dimensions (0-3 each, max 18).
 Return ONLY valid JSON:
@@ -123,10 +125,12 @@ async function searchWithClaude({ query, location, remote }) {
     if (!match) return [];
 
     const jobs = JSON.parse(match[0]);
-    return jobs.map(job => ({
-      ...job,
-      source: 'ai-search',
-    }));
+    return jobs
+      .filter(job => job.url && job.url.startsWith('http'))
+      .map(job => ({
+        ...job,
+        source: 'ai-search',
+      }));
   } catch {
     return [];
   }
