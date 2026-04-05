@@ -1,18 +1,38 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from './AuthProvider';
+import { getEffectivePlan, PLANS } from '../lib/plans';
+import { clearLocalData } from '../lib/storage';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: '⌂' },
+  { href: '/screening', label: 'Screening', icon: '◎' },
+  { href: '/chat', label: 'Chat', icon: '◆' },
   { href: '/profile', label: 'Profile', icon: '◉' },
   { href: '/jobs', label: 'Jobs', icon: '◈' },
   { href: '/pipeline', label: 'Pipeline', icon: '▦' },
   { href: '/tailor', label: 'Tailor', icon: '✎' },
+  { href: '/linkedin', label: 'LinkedIn', icon: '▤' },
 ];
 
 export default function Nav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, profile, supabase } = useAuth();
+
+  const effectivePlan = profile ? getEffectivePlan(profile) : 'trial';
+  const planInfo = PLANS[effectivePlan] || PLANS.trial;
+
+  const handleLogout = async () => {
+    clearLocalData();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    router.push('/login');
+    router.refresh();
+  };
 
   return (
     <nav className="sidebar">
@@ -33,6 +53,22 @@ export default function Nav() {
           );
         })}
       </ul>
+      <div className="sidebar-footer">
+        {profile && (
+          <div className="plan-badge">
+            <span className="plan-name">{planInfo.name}</span>
+            {effectivePlan === 'trial' && (
+              <span className="plan-trial">
+                {Math.max(0, Math.ceil((new Date(profile.trial_ends_at) - new Date()) / (1000 * 60 * 60 * 24)))}d left
+              </span>
+            )}
+          </div>
+        )}
+        <button className="nav-logout" onClick={handleLogout}>
+          <span className="nav-icon">↪</span>
+          <span className="nav-label">Log out</span>
+        </button>
+      </div>
       <style jsx>{`
         .sidebar {
           position: fixed;
@@ -107,11 +143,53 @@ export default function Nav() {
           text-align: center;
           flex-shrink: 0;
         }
+        .sidebar-footer {
+          padding: 0.75rem 1.25rem;
+          border-top: 1px solid var(--border);
+        }
+        .plan-badge {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.5rem 0.75rem;
+          background: var(--surface-2);
+          border-radius: var(--radius-sm);
+          margin-bottom: 0.5rem;
+        }
+        .plan-name {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--accent);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .plan-trial {
+          font-size: 0.7rem;
+          color: var(--warning);
+        }
+        .nav-logout {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          width: 100%;
+          padding: 0.625rem 0;
+          background: none;
+          color: var(--text-dim);
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+          text-align: left;
+          transition: color 0.15s;
+        }
+        .nav-logout:hover { color: var(--danger); }
 
         @media (max-width: 1024px) {
           .logo-text, .nav-label { display: none; }
           .sidebar-header { justify-content: center; padding: 1.25rem 0.5rem; }
           :global(.nav-link) { justify-content: center; padding: 0.75rem; }
+          .sidebar-footer { padding: 0.5rem; }
+          .plan-badge { display: none; }
+          .nav-logout { justify-content: center; padding: 0.75rem; }
         }
 
         @media (max-width: 768px) {
@@ -127,6 +205,7 @@ export default function Nav() {
             border-top: 1px solid var(--border);
           }
           .sidebar-header { display: none; }
+          .sidebar-footer { display: none; }
           .nav-list {
             display: flex;
             width: 100%;

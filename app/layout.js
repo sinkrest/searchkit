@@ -1,21 +1,19 @@
 import './globals.css';
-import Nav from '../components/Nav';
+import AuthProvider from '../components/AuthProvider';
+import AppShell from '../components/AppShell';
 
 export const metadata = {
-  title: 'SearchKit',
-  description: 'AI-powered job search assistant',
+  title: 'SearchKit — AI Job Search Agent',
+  description: 'Your AI job search agent. It screens jobs while you sleep, scores every role against your profile, and briefs you every morning.',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <div className="app-layout">
-          <Nav />
-          <main className="main-content">
-            {children}
-          </main>
-        </div>
+        <AuthProvider>
+          <AppShell>{children}</AppShell>
+        </AuthProvider>
       </body>
     </html>
   );

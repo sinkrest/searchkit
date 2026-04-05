@@ -1,3 +1,17 @@
 {
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/screen",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/brief",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/linkedin",
+      "schedule": "0 7 * * 1,3,5"
+    }
+  ]
 }
