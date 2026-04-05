@@ -66,6 +66,17 @@ export default function JobCard({ job, onSave, onDelete, expanded: startExpanded
           )}
 
           <div className="flex-gap">
+            {job.url && (
+              <a
+                href={job.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary"
+                style={{ fontSize: '0.8rem', textDecoration: 'none', color: 'var(--accent)', borderColor: 'var(--accent)' }}
+              >
+                View JD →
+              </a>
+            )}
             {onSave && (
               <button className="btn-primary" onClick={() => onSave(job)} style={{ fontSize: '0.8rem' }}>
                 Save to Pipeline

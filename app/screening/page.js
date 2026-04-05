@@ -335,7 +335,19 @@ export default function ScreeningPage() {
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, alignItems: 'center' }}>
+                      {job.url && (
+                        <a
+                          href={job.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-secondary"
+                          style={{ fontSize: '0.8rem', padding: '0.5rem 0.875rem', textDecoration: 'none', color: 'var(--accent)', borderColor: 'var(--accent)', whiteSpace: 'nowrap' }}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          JD →
+                        </a>
+                      )}
                       {isSaved ? (
                         <button
                           className="btn-secondary"
